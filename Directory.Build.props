@@ -1,0 +1,13 @@
+<Project>
+  <PropertyGroup>
+    <LangVersion>latest</LangVersion>
+    <Nullable>enable</Nullable>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Version>0.1.0</Version>
+    <Company>ALFA Racing</Company>
+    <Product>ALFA Racing</Product>
+    <Copyright>© 2026 ALFA Racing</Copyright>
+    <Deterministic>true</Deterministic>
+    <SatelliteResourceLanguages>ko;en</SatelliteResourceLanguages>
+  </PropertyGroup>
+</Project>

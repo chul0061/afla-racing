@@ -1,0 +1,112 @@
+name: Build
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: windows-latest
+    timeout-minutes: 30
+    env:
+      DOTNET_CLI_TELEMETRY_OPTOUT: 1
+      DOTNET_NOLOGO: 1
+    steps:
+      - uses: actions/checkout@v7
+
+      - uses: actions/setup-dotnet@v6
+        with:
+          dotnet-version: 10.0.x
+
+      - name: Test
+        run: dotnet test tests/AlfaRacing.Core.Tests -c Release
+
+      - name: Publish exe
+        run: dotnet publish src/AlfaRacing.App -c Release -r win-x64 -o publish
+
+      # Opens every window with sample data on real Windows, saves screenshots and fails on any error.
+      - name: Smoke test
+        shell: pwsh
+        run: |
+          $out = Join-Path $env:RUNNER_TEMP 'smoke'
+          $process = Start-Process -FilePath 'publish\ALFARacing.exe' -ArgumentList @('--smoke-test', "`"$out`"") -PassThru
+          $null = $process.Handle # keeps ExitCode available after exit
+          $timedOut = -not $process.WaitForExit(180000)
+          if ($timedOut) { Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue }
+          New-Item -ItemType Directory -Force screenshots | Out-Null
+          Get-ChildItem $out -Filter *.png -ErrorAction SilentlyContinue | Copy-Item -Destination screenshots
+          $result = Join-Path $out 'smoke-result.txt'
+          $log = Join-Path $out 'data\logs\alfa-racing.log'
+          if (Test-Path $result) { Copy-Item $result screenshots; Get-Content $result }
+          if (Test-Path $log) { Copy-Item $log screenshots; Get-Content $log -Tail 40 }
+          if ($timedOut) { throw 'Smoke test timed out after 3 minutes' }
+          if ($process.ExitCode -ne 0) { throw "Smoke test failed (exit code $($process.ExitCode))" }
+
+      - name: Upload exe
+        uses: actions/upload-artifact@v7
+        with:
+          name: ALFARacing
+          path: publish/ALFARacing.exe
+
+      - name: Upload screenshots
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: screenshots
+          path: screenshots
+          if-no-files-found: ignore
+
+      # Screenshots also go to the "ci-preview" branch so they can be viewed without downloading artifacts.
+      - name: Publish screenshots to ci-preview branch
+        if: always() && github.event_name == 'push'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          if (-not (Test-Path screenshots)) { exit 0 }
+          $dir = Join-Path $env:RUNNER_TEMP 'preview'
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          Copy-Item screenshots\* $dir
+          "commit: $env:GITHUB_SHA`nrun: $env:GITHUB_SERVER_URL/$env:GITHUB_REPOSITORY/actions/runs/$env:GITHUB_RUN_ID" | Out-File (Join-Path $dir 'info.txt') -Encoding utf8
+          Set-Location $dir
+          git init -q -b ci-preview
+          git config user.name 'github-actions[bot]'
+          git config user.email '41898282+github-actions[bot]@users.noreply.github.com'
+          git add -A
+          git commit -q -m "Preview for $env:GITHUB_SHA"
+          git push -q --force "https://x-access-token:$env:GH_TOKEN@github.com/$env:GITHUB_REPOSITORY.git" ci-preview
+
+      # Every push to main refreshes the release for the version in Directory.Build.props.
+      - name: Create or update release
+        if: github.event_name == 'push' && github.ref == 'refs/heads/main'
+        shell: pwsh
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          $version = (Select-Xml -Path Directory.Build.props -XPath '//Version').Node.InnerText
+          $tag = "v$version"
+          $notes = @"
+          ## ALFA Racing $tag
+
+          **ALFARacing.exe** 를 받아서 바로 실행하면 돼요. 설치는 필요 없어요.
+
+          - 처음 실행할 때 'Windows의 PC 보호' 창이 뜨면 **추가 정보 → 실행** 을 눌러 주세요.
+          - 설정은 ``%APPDATA%\ALFA Racing\settings.json`` 에 저장돼요.
+
+          빌드: $env:GITHUB_SHA
+          "@
+          gh release view $tag *> $null
+          if ($LASTEXITCODE -eq 0) {
+            gh release upload $tag publish/ALFARacing.exe --clobber
+          } else {
+            gh release create $tag publish/ALFARacing.exe --title "ALFA Racing $tag" --notes $notes --target $env:GITHUB_SHA
+          }
