@@ -1,0 +1,2 @@
+OK
+captured: 01-main.png, 02-settings-start-list.png, 03-settings-stop.png, 04-settings-recommended.png, 05-settings-general.png, 06-item-editor.png, 07-process-picker.png, 08-main-trading-paints-missing.png, 09-first-run.png, 10-main-empty.png, 11-shortcut-start-progress.png, 12-shortcut-start-done.png, 13-shortcut-stop-problem.png, shortcuts(2)
