@@ -1,8 +1,8 @@
 <p align="center">
-  <img src="branding/icon-256.png" width="128" alt="ALFA Racing" />
+  <img src="branding/icon-256.png" width="128" alt="AFLA Racing" />
 </p>
 
-<h1 align="center">ALFA Racing</h1>
+<h1 align="center">AFLA Racing</h1>
 
 <p align="center">심레이싱 프로그램을 버튼 하나로 켜고 끄는 Windows 런처</p>
 
@@ -10,7 +10,7 @@
 
 ## 다운로드
 
-[**Releases**](../../releases/latest) 에서 `ALFARacing.exe` 를 받아서 실행하면 돼요. 설치나 .NET 설치는 필요 없어요.
+[**Releases**](../../releases/latest) 에서 `AFLARacing.exe` 를 받아서 실행하면 돼요. 설치나 .NET 설치는 필요 없어요.
 
 > 처음 실행할 때 **"Windows의 PC 보호"** 창이 뜨면 **추가 정보 → 실행** 을 눌러 주세요. (서명되지 않은 exe라서 뜨는 경고예요.)
 
@@ -21,7 +21,7 @@
 | **▶ 시작** | 시작 목록의 프로그램을 위에서부터 순서대로 켜요. 이미 켜져 있는 건 건너뛰어요. |
 | **■ 종료** | 시작 목록에서 "종료 시 끄기"가 체크된 프로그램을 **켠 순서의 반대로** 꺼요. 먼저 창을 닫아 정상 종료를 요청하고, 안 꺼지면 강제로 종료해요. |
 
-- **바탕화면 바로가기**: `ALFA Racing 시작` / `ALFA Racing 종료` 를 더블클릭하면 창을 열지 않고 바로 모두 켜고 꺼요. 화면 오른쪽 아래에 진행 상황이 잠깐 떴다가 사라져요. (처음 실행할 때 만들거나, 설정 → 일반에서 만들 수 있어요.)
+- **바탕화면 바로가기**: `AFLA Racing 시작` / `AFLA Racing 종료` 를 더블클릭하면 창을 열지 않고 바로 모두 켜고 꺼요. 화면 오른쪽 아래에 진행 상황이 잠깐 떴다가 사라져요. (처음 실행할 때 만들거나, 설정 → 일반에서 만들 수 있어요.)
 - **리버리 고르기**: 메인 화면의 Trading Paints 줄에 있는 버튼을 누르면 Trading Paints 홈페이지가 열려요.
 - **처음 실행**하면 설치된 프로그램을 자동으로 찾아서 시작 목록을 만들어 줘요.
 - **설정 → 시작 목록**: 프로그램 추가(파일 선택 / 실행 중인 프로그램에서 고르기), 편집, 순서 변경, 사용 여부, 종료 시 끄기.
@@ -42,26 +42,26 @@
 
 ## 자주 묻는 것
 
-- **어떤 프로그램이 안 꺼져요 ("관리자 권한으로 실행 중")**: 그 프로그램이 관리자 권한으로 돌고 있어서 그래요. ALFA Racing을 마우스 오른쪽 버튼 → **관리자 권한으로 실행** 으로 켜면 끌 수 있어요.
+- **어떤 프로그램이 안 꺼져요 ("관리자 권한으로 실행 중")**: 그 프로그램이 관리자 권한으로 돌고 있어서 그래요. AFLA Racing을 마우스 오른쪽 버튼 → **관리자 권한으로 실행** 으로 켜면 끌 수 있어요.
 - **실행 중인데 "꺼짐"으로 보여요**: 프로세스 이름이 다를 수 있어요. 설정 → 시작 목록 → 편집에서 작업 관리자 **세부 정보** 탭에 보이는 이름(.exe 없이)을 넣어 주세요. `iRacingSim*` 처럼 끝에 `*`를 붙이면 앞부분만 같아도 돼요.
-- **설정 파일 / 로그**: `%APPDATA%\ALFA Racing\settings.json`, `%APPDATA%\ALFA Racing\logs\alfa-racing.log` (설정 → 일반에서 폴더 열기)
+- **설정 파일 / 로그**: `%APPDATA%\AFLA Racing\settings.json`, `%APPDATA%\AFLA Racing\logs\afla-racing.log` (설정 → 일반에서 폴더 열기)
 - **Windows 필수 프로세스**(explorer, svchost 등)는 실수로 넣어도 절대 끄지 않아요.
-- **exe를 다른 폴더로 옮겼어요**: ALFA Racing을 한 번 열면 바탕화면 바로가기와 자동 실행 경로가 알아서 고쳐져요.
-- **명령줄**: `ALFARacing.exe --start` / `--stop` 으로도 바로가기와 똑같이 동작해요.
+- **exe를 다른 폴더로 옮겼어요**: AFLA Racing을 한 번 열면 바탕화면 바로가기와 자동 실행 경로가 알아서 고쳐져요.
+- **명령줄**: `AFLARacing.exe --start` / `--stop` 으로도 바로가기와 똑같이 동작해요.
 
 ## 개발
 
 - C# / .NET 10 / WPF (Fluent 다크 테마)
-- `src/AlfaRacing.Core` — 실행·종료 로직, 설치 감지, 설정 (플랫폼 독립, 테스트 가능)
-- `src/AlfaRacing.App` — WPF 화면
-- `tests/AlfaRacing.Core.Tests` — xUnit 테스트
+- `src/AflaRacing.Core` — 실행·종료 로직, 설치 감지, 설정 (플랫폼 독립, 테스트 가능)
+- `src/AflaRacing.App` — WPF 화면
+- `tests/AflaRacing.Core.Tests` — xUnit 테스트
 
 ```bash
-dotnet test tests/AlfaRacing.Core.Tests
+dotnet test tests/AflaRacing.Core.Tests
 ```
 
 ```bash
-dotnet publish src/AlfaRacing.App -c Release -r win-x64 -o publish
+dotnet publish src/AflaRacing.App -c Release -r win-x64 -o publish
 ```
 
 Windows가 아니어도(macOS/Linux) 위 명령으로 Windows용 exe를 만들 수 있어요.

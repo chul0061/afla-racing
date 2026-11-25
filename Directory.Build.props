@@ -3,10 +3,10 @@
     <LangVersion>latest</LangVersion>
     <Nullable>enable</Nullable>
     <ImplicitUsings>enable</ImplicitUsings>
-    <Version>0.2.0</Version>
-    <Company>ALFA Racing</Company>
-    <Product>ALFA Racing</Product>
-    <Copyright>© 2026 ALFA Racing</Copyright>
+    <Version>0.2.1</Version>
+    <Company>AFLA Racing</Company>
+    <Product>AFLA Racing</Product>
+    <Copyright>© 2026 AFLA Racing</Copyright>
     <Deterministic>true</Deterministic>
     <SatelliteResourceLanguages>ko;en</SatelliteResourceLanguages>
   </PropertyGroup>

@@ -1,0 +1,60 @@
+<Window x:Class="AflaRacing.App.Views.ItemEditorWindow"
+        xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+        xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+        Title="프로그램 편집"
+        Width="620"
+        SizeToContent="Height"
+        ResizeMode="NoResize"
+        WindowStartupLocation="CenterOwner"
+        ShowInTaskbar="False"
+        Icon="/Assets/afla.ico"
+        Background="{StaticResource WindowBackgroundBrush}"
+        Foreground="{StaticResource TextPrimaryBrush}"
+        FontSize="14">
+    <StackPanel Margin="20">
+        <TextBlock Text="이름" Style="{StaticResource ColumnHeaderText}" />
+        <TextBox x:Name="NameBox" Margin="0,6,0,0" />
+
+        <TextBlock Text="실행할 파일 또는 주소" Style="{StaticResource ColumnHeaderText}" Margin="0,16,0,0" />
+        <Grid Margin="0,6,0,0">
+            <Grid.ColumnDefinitions>
+                <ColumnDefinition Width="*" />
+                <ColumnDefinition Width="Auto" />
+            </Grid.ColumnDefinitions>
+            <TextBox x:Name="PathBox" />
+            <Button Grid.Column="1" Content="찾아보기..." Margin="8,0,0,0" Click="OnBrowseClick" />
+        </Grid>
+        <TextBlock Style="{StaticResource MutedText}"
+                   FontSize="12"
+                   Margin="0,4,0,0"
+                   Text="exe 파일, 바로가기(.lnk), 또는 steam://rungameid/266410 같은 주소를 쓸 수 있어요." />
+
+        <TextBlock Text="실행 인자 (선택)" Style="{StaticResource ColumnHeaderText}" Margin="0,16,0,0" />
+        <TextBox x:Name="ArgumentsBox" Margin="0,6,0,0" />
+
+        <TextBlock Text="실행 전 대기 (초)" Style="{StaticResource ColumnHeaderText}" Margin="0,16,0,0" />
+        <StackPanel Orientation="Horizontal" Margin="0,6,0,0">
+            <TextBox x:Name="DelayBox" Width="90" />
+            <TextBlock Style="{StaticResource MutedText}"
+                       FontSize="12"
+                       Margin="10,0,0,0"
+                       VerticalAlignment="Center"
+                       Text="앞 프로그램을 켠 뒤 이만큼 기다렸다가 켜요." />
+        </StackPanel>
+
+        <TextBlock Text="프로세스 이름" Style="{StaticResource ColumnHeaderText}" Margin="0,16,0,0" />
+        <TextBox x:Name="ProcessNamesBox" Margin="0,6,0,0" />
+        <TextBlock Style="{StaticResource MutedText}"
+                   FontSize="12"
+                   Margin="0,4,0,0"
+                   Text="실행 중인지 확인하고 끌 때 써요. 작업 관리자 '세부 정보' 탭의 이름을 .exe 없이, 여러 개면 쉼표로 구분해서 적어요. 비워두면 exe 파일 이름을 써요." />
+
+        <CheckBox x:Name="EnabledCheck" Content="시작 버튼으로 켜기" Margin="0,18,0,0" />
+        <CheckBox x:Name="StopOnExitCheck" Content="종료 버튼으로 끄기" Margin="0,8,0,0" />
+
+        <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" Margin="0,22,0,0">
+            <Button Content="확인" IsDefault="True" MinWidth="96" Click="OnOkClick" />
+            <Button Content="취소" IsCancel="True" MinWidth="96" Margin="8,0,0,0" />
+        </StackPanel>
+    </StackPanel>
+</Window>

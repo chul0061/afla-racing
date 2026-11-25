@@ -1,0 +1,36 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net10.0-windows</TargetFramework>
+    <UseWPF>true</UseWPF>
+    <!-- Lets the Windows app be built on Linux/macOS (CI or cloud). -->
+    <EnableWindowsTargeting>true</EnableWindowsTargeting>
+    <AssemblyName>AFLARacing</AssemblyName>
+    <RootNamespace>AflaRacing.App</RootNamespace>
+    <ApplicationIcon>Assets\afla.ico</ApplicationIcon>
+    <ApplicationManifest>app.manifest</ApplicationManifest>
+    <!-- WPF Fluent theme (ThemeMode) is still flagged experimental. -->
+    <NoWarn>$(NoWarn);WPF0001</NoWarn>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(RuntimeIdentifier)' != ''">
+    <SelfContained>true</SelfContained>
+    <PublishSingleFile>true</PublishSingleFile>
+    <EnableCompressionInSingleFile>true</EnableCompressionInSingleFile>
+    <IncludeNativeLibrariesForSelfExtract>true</IncludeNativeLibrariesForSelfExtract>
+    <DebugType>none</DebugType>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Resource Include="Assets\afla.ico" />
+    <Resource Include="Assets\logo.png" />
+    <Resource Include="Assets\shortcut-start.ico" />
+    <Resource Include="Assets\shortcut-stop.ico" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\AflaRacing.Core\AflaRacing.Core.csproj" />
+  </ItemGroup>
+
+</Project>

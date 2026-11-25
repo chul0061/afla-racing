@@ -28,24 +28,24 @@ jobs:
           dotnet-version: 10.0.x
 
       - name: Test
-        run: dotnet test tests/AlfaRacing.Core.Tests -c Release
+        run: dotnet test tests/AflaRacing.Core.Tests -c Release
 
       - name: Publish exe
-        run: dotnet publish src/AlfaRacing.App -c Release -r win-x64 -o publish
+        run: dotnet publish src/AflaRacing.App -c Release -r win-x64 -o publish
 
       # Opens every window with sample data on real Windows, saves screenshots and fails on any error.
       - name: Smoke test
         shell: pwsh
         run: |
           $out = Join-Path $env:RUNNER_TEMP 'smoke'
-          $process = Start-Process -FilePath 'publish\ALFARacing.exe' -ArgumentList @('--smoke-test', "`"$out`"") -PassThru
+          $process = Start-Process -FilePath 'publish\AFLARacing.exe' -ArgumentList @('--smoke-test', "`"$out`"") -PassThru
           $null = $process.Handle # keeps ExitCode available after exit
           $timedOut = -not $process.WaitForExit(180000)
           if ($timedOut) { Stop-Process -Id $process.Id -Force -ErrorAction SilentlyContinue }
           New-Item -ItemType Directory -Force screenshots | Out-Null
           Get-ChildItem $out -Filter *.png -ErrorAction SilentlyContinue | Copy-Item -Destination screenshots
           $result = Join-Path $out 'smoke-result.txt'
-          $log = Join-Path $out 'data\logs\alfa-racing.log'
+          $log = Join-Path $out 'data\logs\afla-racing.log'
           if (Test-Path $result) { Copy-Item $result screenshots; Get-Content $result }
           if (Test-Path $log) { Copy-Item $log screenshots; Get-Content $log -Tail 40 }
           if ($timedOut) { throw 'Smoke test timed out after 3 minutes' }
@@ -71,10 +71,10 @@ jobs:
             )
           }
           $settings | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $dir 'settings.json') -Encoding utf8
-          $log = Join-Path $dir 'logs\alfa-racing.log'
+          $log = Join-Path $dir 'logs\afla-racing.log'
 
-          function Invoke-Alfa([string] $argument) {
-            $p = Start-Process -FilePath 'publish\ALFARacing.exe' -ArgumentList @($argument, '--data-dir', "`"$dir`"") -PassThru
+          function Invoke-Afla([string] $argument) {
+            $p = Start-Process -FilePath 'publish\AFLARacing.exe' -ArgumentList @($argument, '--data-dir', "`"$dir`"") -PassThru
             $null = $p.Handle
             if (-not $p.WaitForExit(60000)) {
               Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
@@ -87,12 +87,12 @@ jobs:
             }
           }
 
-          Invoke-Alfa '--start'
+          Invoke-Afla '--start'
           Start-Sleep -Seconds 2
           if (-not (Get-Process notepad -ErrorAction SilentlyContinue)) { Get-Content $log; throw 'Notepad was not started' }
           Write-Host 'Notepad started by --start'
 
-          Invoke-Alfa '--stop'
+          Invoke-Afla '--stop'
           Start-Sleep -Seconds 2
           if (Get-Process notepad -ErrorAction SilentlyContinue) { Get-Content $log; throw 'Notepad is still running after --stop' }
           Write-Host 'Notepad closed by --stop'
@@ -101,8 +101,8 @@ jobs:
       - name: Upload exe
         uses: actions/upload-artifact@v7
         with:
-          name: ALFARacing
-          path: publish/ALFARacing.exe
+          name: AFLARacing
+          path: publish/AFLARacing.exe
 
       - name: Upload screenshots
         if: always()
@@ -142,18 +142,18 @@ jobs:
           $version = (Select-Xml -Path Directory.Build.props -XPath '//Version').Node.InnerText
           $tag = "v$version"
           $notes = @"
-          ## ALFA Racing $tag
+          ## AFLA Racing $tag
 
-          **ALFARacing.exe** 를 받아서 바로 실행하면 돼요. 설치는 필요 없어요.
+          **AFLARacing.exe** 를 받아서 바로 실행하면 돼요. 설치는 필요 없어요.
 
           - 처음 실행할 때 'Windows의 PC 보호' 창이 뜨면 **추가 정보 → 실행** 을 눌러 주세요.
-          - 설정은 ``%APPDATA%\ALFA Racing\settings.json`` 에 저장돼요.
+          - 설정은 ``%APPDATA%\AFLA Racing\settings.json`` 에 저장돼요.
 
           빌드: $env:GITHUB_SHA
           "@
           gh release view $tag *> $null
           if ($LASTEXITCODE -eq 0) {
-            gh release upload $tag publish/ALFARacing.exe --clobber
+            gh release upload $tag publish/AFLARacing.exe --clobber
           } else {
-            gh release create $tag publish/ALFARacing.exe --title "ALFA Racing $tag" --notes $notes --target $env:GITHUB_SHA
+            gh release create $tag publish/AFLARacing.exe --title "AFLA Racing $tag" --notes $notes --target $env:GITHUB_SHA
           }
