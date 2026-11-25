@@ -159,6 +159,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        using var actionLock = ActionLock.TryAcquire();
+        if (actionLock is null)
+        {
+            Shell.Info(this, "바탕화면 바로가기로 시작이나 종료가 진행 중이에요.\n끝난 뒤에 다시 눌러 주세요.");
+            return;
+        }
+
         SetBusy(true, "시작하는 중...");
         try
         {
@@ -206,6 +213,13 @@ public partial class MainWindow : Window
             return;
         }
 
+        using var actionLock = ActionLock.TryAcquire();
+        if (actionLock is null)
+        {
+            Shell.Info(this, "바탕화면 바로가기로 시작이나 종료가 진행 중이에요.\n끝난 뒤에 다시 눌러 주세요.");
+            return;
+        }
+
         SetBusy(true, "종료하는 중...");
         try
         {
@@ -248,6 +262,14 @@ public partial class MainWindow : Window
     private void OnInstallTradingPaintsClick(object sender, RoutedEventArgs e) =>
         Shell.OpenUrl(ProgramCatalog.TradingPaints.WebsiteUrl);
 
+    private void OnQuickLinkClick(object sender, RoutedEventArgs e)
+    {
+        if ((sender as FrameworkElement)?.DataContext is StatusRowViewModel { QuickLinkUrl: { } url })
+        {
+            Shell.OpenUrl(url);
+        }
+    }
+
     private void OnSettingsClick(object sender, RoutedEventArgs e) => OpenSettings(SettingsTab.StartList);
 
     private void OnRecommendedClick(object sender, RoutedEventArgs e) => OpenSettings(SettingsTab.Recommended);
@@ -276,7 +298,8 @@ public partial class MainWindow : Window
     private void ShowFirstRunSetup()
     {
         var window = new FirstRunWindow(_services) { Owner = this };
-        if (window.ShowDialog() == true)
+        var confirmed = window.ShowDialog() == true;
+        if (confirmed)
         {
             var added = StartListBuilder.Merge(_services.Settings.StartItems, window.SelectedResults);
             AppLog.Info($"자동 설정으로 {added}개 추가");
@@ -285,6 +308,27 @@ public partial class MainWindow : Window
         _services.Settings.FirstRunCompleted = true;
         SaveSettings();
         RebuildRows();
+
+        if (confirmed && window.CreateDesktopShortcuts && CreateDesktopShortcuts(this, _services))
+        {
+            StatusText.Text = "시작 목록을 만들고, 바탕화면에 시작·종료 바로가기도 만들었어요.";
+        }
+    }
+
+    /// <summary>Creates the desktop shortcuts; shows an error and returns false when that fails.</summary>
+    public static bool CreateDesktopShortcuts(Window owner, AppServices services)
+    {
+        try
+        {
+            DesktopShortcuts.Create(services.DataDirectory);
+            return true;
+        }
+        catch (Exception ex)
+        {
+            AppLog.Error("바탕화면 바로가기를 만들지 못했어요.", ex);
+            Shell.Error(owner, $"바탕화면 바로가기를 만들지 못했어요.\n{ex.Message}");
+            return false;
+        }
     }
 
     private void SaveSettings()

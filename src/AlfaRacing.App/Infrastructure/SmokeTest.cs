@@ -61,6 +61,30 @@ internal static class SmokeTest
             var empty = new AppServices(dataDirectory, running, new EmptyUninstallRegistry());
             empty.SetDetection(SampleDetection(paths, tradingPaintsInstalled: true));
             Capture(new MainWindow(empty), outputDirectory, "10-main-empty.png", captured);
+
+            // Desktop shortcut popups (filled by hand instead of really starting/stopping).
+            var progressPopup = new QuickActionWindow(services, QuickAction.Start, autoRun: false);
+            progressPopup.ShowProgress("CrewChief · 실행하는 중 (3/6)");
+            Capture(progressPopup, outputDirectory, "11-shortcut-start-progress.png", captured);
+
+            var donePopup = new QuickActionWindow(services, QuickAction.Start, autoRun: false);
+            donePopup.ShowResult(Summaries.ForStart(services.Settings.StartItems
+                .Select(i => new StartStepResult(i, i.CatalogId == ProgramCatalog.CrewChiefId ? StartOutcome.AlreadyRunning : StartOutcome.Started))
+                .ToList()));
+            Capture(donePopup, outputDirectory, "12-shortcut-start-done.png", captured);
+
+            var problemPopup = new QuickActionWindow(services, QuickAction.Stop, autoRun: false);
+            ProcessNamePattern.TryParse("MOZA Pit House", out var mozaPattern, out _);
+            ProcessNamePattern.TryParse("CrewChiefV4", out var crewChiefPattern, out _);
+            problemPopup.ShowResult(Summaries.ForStop(
+            [
+                new StopStepResult(new StopTarget("CrewChief", [crewChiefPattern]), StopOutcome.Stopped),
+                new StopStepResult(new StopTarget("MOZA Pit House", [mozaPattern]), StopOutcome.AccessDenied, "관리자 권한으로 실행 중이라 끌 수 없어요."),
+            ]));
+            Capture(problemPopup, outputDirectory, "13-shortcut-stop-problem.png", captured);
+
+            // Real .lnk files (into a temp folder, not the desktop): checks the Windows shortcut API end to end.
+            CheckShortcuts(dataDirectory, Path.Combine(outputDirectory, "desktop"), captured);
         }
         catch (Exception ex)
         {
@@ -77,6 +101,34 @@ internal static class SmokeTest
 
         File.WriteAllText(Path.Combine(outputDirectory, "smoke-result.txt"), report.ToString());
         return Errors.Count == 0 ? 0 : 1;
+    }
+
+    private static void CheckShortcuts(string dataDirectory, string folder, List<string> captured)
+    {
+        try
+        {
+            var created = DesktopShortcuts.Create(dataDirectory, folder);
+            foreach (var path in created)
+            {
+                var target = DesktopShortcuts.ReadTargetPath(path);
+                if (!File.Exists(path) || !string.Equals(target, Environment.ProcessPath, StringComparison.OrdinalIgnoreCase))
+                {
+                    Errors.Add($"shortcut check failed: {path} → {target}");
+                }
+            }
+
+            var icons = Directory.GetFiles(Path.Combine(dataDirectory, "icons"), "*.ico");
+            if (icons.Length != DesktopShortcuts.All.Count || icons.Any(i => new FileInfo(i).Length == 0))
+            {
+                Errors.Add($"shortcut icons missing: {string.Join(", ", icons)}");
+            }
+
+            captured.Add($"shortcuts({created.Count})");
+        }
+        catch (Exception ex)
+        {
+            Errors.Add($"shortcuts: {ex}");
+        }
     }
 
     private static void Capture(Window window, string outputDirectory, string fileName, List<string> captured)

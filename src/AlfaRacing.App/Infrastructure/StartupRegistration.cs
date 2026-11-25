@@ -6,7 +6,6 @@ namespace AlfaRacing.App.Infrastructure;
 /// <summary>"Start with Windows" via HKCU\...\Run (no admin rights needed).</summary>
 public static class StartupRegistration
 {
-    public const string AutoStartArgument = "--autostart";
     private const string RunKeyPath = @"Software\Microsoft\Windows\CurrentVersion\Run";
 
     /// <summary>Adds or removes the Run entry. Re-writing it also fixes the path after the exe was moved.</summary>
@@ -24,7 +23,7 @@ public static class StartupRegistration
                     return;
                 }
 
-                key.SetValue(AppInfo.Name, $"\"{exe}\" {AutoStartArgument}");
+                key.SetValue(AppInfo.Name, $"\"{exe}\" {CommandLineOptions.AutoStartArgument}");
             }
             else
             {

@@ -1,4 +1,5 @@
 using System.Collections.ObjectModel;
+using System.IO;
 using System.Windows;
 using System.Windows.Controls;
 using System.Windows.Input;
@@ -76,6 +77,7 @@ public partial class SettingsWindow : Window
 
         CatalogList.ItemsSource = _catalog;
         UpdateCatalogRows();
+        UpdateShortcutInfo();
 
         _services.DetectionUpdated += OnDetectionUpdated;
         Closed += (_, _) => _services.DetectionUpdated -= OnDetectionUpdated;
@@ -342,15 +344,36 @@ public partial class SettingsWindow : Window
     {
         if ((sender as FrameworkElement)?.DataContext is CatalogRowViewModel row)
         {
-            Shell.OpenUrl(row.Program.WebsiteUrl);
+            Shell.OpenUrl(row.WebsiteUrl);
         }
     }
 
     // ---------- General ----------
 
+    private void UpdateShortcutInfo()
+    {
+        var names = string.Join(", ", DesktopShortcuts.All.Select(d => $"'{Path.GetFileNameWithoutExtension(d.FileName)}'"));
+        var exists = !App.IsSmokeTest && DesktopShortcuts.AllExist();
+        ShortcutInfoText.Text = $"{names} 바로가기를 바탕화면에 만들어요. 창을 열지 않고 더블클릭만으로 모두 켜고 끌 수 있어요."
+                                + (exists ? "\n지금 바탕화면에 있어요." : "");
+        CreateShortcutsButton.Content = exists ? "바로가기 다시 만들기" : "바탕화면에 시작·종료 바로가기 만들기";
+    }
+
+    private void OnCreateShortcutsClick(object sender, RoutedEventArgs e)
+    {
+        if (!MainWindow.CreateDesktopShortcuts(this, _services))
+        {
+            return;
+        }
+
+        UpdateShortcutInfo();
+        var names = string.Join("\n", DesktopShortcuts.All.Select(d => $"• {Path.GetFileNameWithoutExtension(d.FileName)}"));
+        Shell.Info(this, $"바탕화면에 바로가기를 만들었어요.\n\n{names}\n\nexe 파일을 다른 폴더로 옮겼다면 {AppInfo.Name}을(를) 한 번 열기만 하면 바로가기가 알아서 고쳐져요.");
+    }
+
     private void OnRunSetupAgainClick(object sender, RoutedEventArgs e)
     {
-        var window = new FirstRunWindow(_services) { Owner = this };
+        var window = new FirstRunWindow(_services, offerShortcuts: false) { Owner = this };
         if (window.ShowDialog() != true)
         {
             return;

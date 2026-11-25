@@ -10,6 +10,7 @@ namespace AlfaRacing.App.ViewModels;
 /// <summary>A row in the main window's program list.</summary>
 public sealed class StatusRowViewModel(LaunchItem item) : ObservableObject
 {
+    private readonly QuickLink? _quickLink = ProgramCatalog.Match(item)?.QuickLink;
     private string _statusText = "확인 중";
     private Brush _statusBrush = Palette.Stopped;
 
@@ -18,6 +19,15 @@ public sealed class StatusRowViewModel(LaunchItem item) : ObservableObject
     public string Name { get; } = item.DisplayName();
 
     public string ToolTipText { get; } = string.IsNullOrWhiteSpace(item.Path) ? "(경로 없음)" : item.Path;
+
+    /// <summary>Extra button for this program, e.g. Trading Paints → "리버리 고르기".</summary>
+    public bool HasQuickLink => _quickLink is not null;
+
+    public string QuickLinkLabel => _quickLink is null ? "" : _quickLink.Label + " ↗";
+
+    public string QuickLinkToolTip => _quickLink?.ToolTip ?? "";
+
+    public string? QuickLinkUrl => _quickLink?.Url;
 
     public string StatusText
     {
@@ -103,6 +113,9 @@ public sealed class CatalogRowViewModel(KnownProgram program) : ObservableObject
     public Brush StatusBrush => _detection is null ? Palette.Stopped : _detection.IsInstalled ? Palette.Running : Palette.Missing;
 
     public string WebsiteButtonText => IsInstalled ? "홈페이지" : "다운로드";
+
+    /// <summary>Homepage once installed, download page otherwise.</summary>
+    public string WebsiteUrl => IsInstalled ? Program.HomepageUrl ?? Program.WebsiteUrl : Program.WebsiteUrl;
 
     public bool CanAdd => IsInstalled && !_isInStartList;
 

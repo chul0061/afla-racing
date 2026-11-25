@@ -14,13 +14,15 @@ public partial class FirstRunWindow : Window
     private readonly AppServices _services;
     private readonly ObservableCollection<DetectionRowViewModel> _rows = [];
 
-    public FirstRunWindow(AppServices services)
+    /// <param name="offerShortcuts">Show the "create desktop shortcuts" check box (first run only).</param>
+    public FirstRunWindow(AppServices services, bool offerShortcuts = true)
     {
         InitializeComponent();
         _services = services;
         Title = $"{AppInfo.Name} 자동 설정";
         WelcomeText.Text = $"{AppInfo.Name}에 오신 걸 환영해요";
         ResultList.ItemsSource = _rows;
+        ShortcutCheck.Visibility = offerShortcuts ? Visibility.Visible : Visibility.Collapsed;
 
         Loaded += async (_, _) =>
         {
@@ -34,6 +36,9 @@ public partial class FirstRunWindow : Window
             }
         };
     }
+
+    /// <summary>True when the user wants the desktop start/stop shortcuts.</summary>
+    public bool CreateDesktopShortcuts => ShortcutCheck.Visibility == Visibility.Visible && ShortcutCheck.IsChecked == true;
 
     /// <summary>Checked, installed programs (valid after the window returned true).</summary>
     public IReadOnlyList<DetectionResult> SelectedResults =>

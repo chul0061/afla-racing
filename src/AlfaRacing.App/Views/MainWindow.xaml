@@ -130,11 +130,12 @@
                     <ItemsControl x:Name="StatusList" Margin="8,0,8,8">
                         <ItemsControl.ItemTemplate>
                             <DataTemplate>
-                                <Border Padding="8,9" Background="Transparent" ToolTip="{Binding ToolTipText}">
+                                <Border Padding="8,9" Background="Transparent">
                                     <Grid>
                                         <Grid.ColumnDefinitions>
                                             <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="*" />
+                                            <ColumnDefinition Width="Auto" />
                                             <ColumnDefinition Width="Auto" />
                                         </Grid.ColumnDefinitions>
                                         <Ellipse Width="10" Height="10" Fill="{Binding StatusBrush}" VerticalAlignment="Center" />
@@ -142,8 +143,20 @@
                                                    Text="{Binding Name}"
                                                    Margin="12,0,0,0"
                                                    VerticalAlignment="Center"
-                                                   TextTrimming="CharacterEllipsis" />
-                                        <TextBlock Grid.Column="2"
+                                                   TextTrimming="CharacterEllipsis"
+                                                   ToolTip="{Binding ToolTipText}" />
+                                        <Button Grid.Column="2"
+                                                Content="{Binding QuickLinkLabel}"
+                                                ToolTip="{Binding QuickLinkToolTip}"
+                                                Visibility="{Binding HasQuickLink, Converter={StaticResource BoolToVisibility}}"
+                                                FontSize="12"
+                                                Padding="10,0"
+                                                MinHeight="0"
+                                                Height="28"
+                                                Margin="12,-5,0,-5"
+                                                VerticalAlignment="Center"
+                                                Click="OnQuickLinkClick" />
+                                        <TextBlock Grid.Column="3"
                                                    Text="{Binding StatusText}"
                                                    Foreground="{Binding StatusBrush}"
                                                    Margin="12,0,0,0"

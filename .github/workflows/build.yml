@@ -51,6 +51,53 @@ jobs:
           if ($timedOut) { throw 'Smoke test timed out after 3 minutes' }
           if ($process.ExitCode -ne 0) { throw "Smoke test failed (exit code $($process.ExitCode))" }
 
+      # Real run of the desktop-shortcut mode: --start opens Notepad, --stop closes it again.
+      - name: End-to-end start/stop
+        shell: pwsh
+        run: |
+          $dir = Join-Path $env:RUNNER_TEMP 'e2e'
+          New-Item -ItemType Directory -Force $dir | Out-Null
+          # A (disabled) Trading Paints entry so the "Trading Paints missing" question doesn't block CI.
+          $tp = Join-Path $dir 'Trading Paints.exe'
+          Set-Content -Path $tp -Value 'placeholder'
+          $settings = [ordered]@{
+            schemaVersion = 1
+            firstRunCompleted = $true
+            confirmStopWhileDriving = $false
+            forceKillAfterSeconds = 3
+            startItems = @(
+              [ordered]@{ name = 'Trading Paints'; path = $tp; enabled = $false; stopOnExit = $false; catalogId = 'trading-paints'; processNames = @() },
+              [ordered]@{ name = 'Notepad'; path = "$env:WINDIR\System32\notepad.exe"; enabled = $true; stopOnExit = $true; processNames = @('notepad') }
+            )
+          }
+          $settings | ConvertTo-Json -Depth 5 | Set-Content (Join-Path $dir 'settings.json') -Encoding utf8
+          $log = Join-Path $dir 'logs\alfa-racing.log'
+
+          function Invoke-Alfa([string] $argument) {
+            $p = Start-Process -FilePath 'publish\ALFARacing.exe' -ArgumentList @($argument, '--data-dir', "`"$dir`"") -PassThru
+            $null = $p.Handle
+            if (-not $p.WaitForExit(60000)) {
+              Stop-Process -Id $p.Id -Force -ErrorAction SilentlyContinue
+              if (Test-Path $log) { Get-Content $log }
+              throw "$argument did not finish within 60 seconds"
+            }
+            if ($p.ExitCode -ne 0) {
+              if (Test-Path $log) { Get-Content $log }
+              throw "$argument failed with exit code $($p.ExitCode)"
+            }
+          }
+
+          Invoke-Alfa '--start'
+          Start-Sleep -Seconds 2
+          if (-not (Get-Process notepad -ErrorAction SilentlyContinue)) { Get-Content $log; throw 'Notepad was not started' }
+          Write-Host 'Notepad started by --start'
+
+          Invoke-Alfa '--stop'
+          Start-Sleep -Seconds 2
+          if (Get-Process notepad -ErrorAction SilentlyContinue) { Get-Content $log; throw 'Notepad is still running after --stop' }
+          Write-Host 'Notepad closed by --stop'
+          Get-Content $log
+
       - name: Upload exe
         uses: actions/upload-artifact@v7
         with:

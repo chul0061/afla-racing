@@ -15,6 +15,9 @@ public enum ProgramCategory
     Recommended,
 }
 
+/// <summary>A shortcut button shown next to the program in the main window (e.g. "pick a livery").</summary>
+public sealed record QuickLink(string Label, string Url, string ToolTip);
+
 /// <summary>A program ALFA Racing knows how to find, recommend and add to the start list.</summary>
 public sealed record KnownProgram
 {
@@ -28,6 +31,12 @@ public sealed record KnownProgram
 
     /// <summary>Download / install page.</summary>
     public required string WebsiteUrl { get; init; }
+
+    /// <summary>Main website, used once the program is installed. Falls back to <see cref="WebsiteUrl"/>.</summary>
+    public string? HomepageUrl { get; init; }
+
+    /// <summary>Optional button shown on the program's row in the main window.</summary>
+    public QuickLink? QuickLink { get; init; }
 
     /// <summary>Executable file names to look for, e.g. "CrewChiefV4.exe".</summary>
     public IReadOnlyList<string> ExeNames { get; init; } = [];

@@ -20,7 +20,7 @@ public partial class App : Application
     {
         base.OnStartup(e);
 
-        var options = StartupOptions.Parse(e.Args);
+        var options = CommandLineOptions.Parse(e.Args);
         IsSmokeTest = options.SmokeTestOutput is not null;
         var dataDirectory = options.DataDirectory
                             ?? (IsSmokeTest ? Path.Combine(options.SmokeTestOutput!, "data") : AppInfo.DefaultDataDirectory);
@@ -34,6 +34,12 @@ public partial class App : Application
         {
             ShutdownMode = ShutdownMode.OnExplicitShutdown;
             Shutdown(SmokeTest.Run(options.SmokeTestOutput!));
+            return;
+        }
+
+        if (options.QuickAction != QuickAction.None)
+        {
+            RunQuickAction(options.QuickAction, dataDirectory);
             return;
         }
 
@@ -53,6 +59,8 @@ public partial class App : Application
             StartupRegistration.Apply(true); // keeps the path right if the exe was moved
         }
 
+        DesktopShortcuts.RefreshExisting(dataDirectory); // same for the desktop shortcuts
+
         var window = new MainWindow(services, options.AutoStart);
         MainWindow = window;
         _singleInstance.ActivationRequested += () => Dispatcher.InvokeAsync(window.BringToFront);
@@ -62,6 +70,22 @@ public partial class App : Application
         {
             Shell.Warning(window, loaded.Warning);
         }
+    }
+
+    /// <summary>Desktop shortcut mode: start or stop everything with a small popup, then exit.</summary>
+    private void RunQuickAction(QuickAction action, string dataDirectory)
+    {
+        AppLog.Info($"바로가기 실행: {action}");
+        ShutdownMode = ShutdownMode.OnExplicitShutdown;
+
+        var services = new AppServices(dataDirectory);
+        var loaded = services.Store.Load();
+        services.Settings = loaded.Settings;
+
+        var window = new QuickActionWindow(services, action);
+        MainWindow = window;
+        window.Closed += (_, _) => Shutdown(window.ExitCode);
+        window.Show();
     }
 
     protected override void OnExit(ExitEventArgs e)

@@ -10,6 +10,8 @@ public static class ProgramCatalog
     public const string BloopsId = "bloops";
     public const string IRacingId = "iracing";
 
+    public const string TradingPaintsHomepage = "https://www.tradingpaints.com/";
+
     /// <summary>Processes that mean the iRacing simulator itself (a session) is running.</summary>
     public static IReadOnlyList<string> DrivingProcessNames { get; } = ["iRacingSim*"];
 
@@ -39,6 +41,8 @@ public static class ProgramCatalog
             Category = ProgramCategory.Required,
             Description = "다른 드라이버들의 커스텀 페인트를 받아와요. 없으면 다른 차들이 기본 도색으로 보여요.",
             WebsiteUrl = "https://www.tradingpaints.com/install",
+            HomepageUrl = TradingPaintsHomepage,
+            QuickLink = new QuickLink("리버리 고르기", TradingPaintsHomepage, "Trading Paints 홈페이지를 열어서 내 차 리버리(페인트)를 골라요"),
             ExeNames = ["Trading Paints.exe", "TradingPaints.exe", "Trading Paints Downloader.exe"],
             SearchDirectories =
             [
@@ -131,4 +135,22 @@ public static class ProgramCatalog
         id is null ? null : All.FirstOrDefault(p => p.Id.Equals(id, StringComparison.OrdinalIgnoreCase));
 
     public static KnownProgram TradingPaints => Find(TradingPaintsId)!;
+
+    /// <summary>The catalog program a start-list item belongs to: by its catalog id, else by its exe file name.</summary>
+    public static KnownProgram? Match(Models.LaunchItem item)
+    {
+        if (Find(item.CatalogId) is { } byId)
+        {
+            return byId;
+        }
+
+        var path = PathHelpers.Normalize(item.Path);
+        if (path.Length == 0 || PathHelpers.IsUri(path))
+        {
+            return null;
+        }
+
+        var fileName = PathHelpers.GetFileName(path);
+        return All.FirstOrDefault(p => p.ExeNames.Any(n => n.Equals(fileName, StringComparison.OrdinalIgnoreCase)));
+    }
 }

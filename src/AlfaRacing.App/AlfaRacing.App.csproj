@@ -25,6 +25,8 @@
   <ItemGroup>
     <Resource Include="Assets\alfa.ico" />
     <Resource Include="Assets\logo.png" />
+    <Resource Include="Assets\shortcut-start.ico" />
+    <Resource Include="Assets\shortcut-stop.ico" />
   </ItemGroup>
 
   <ItemGroup>
